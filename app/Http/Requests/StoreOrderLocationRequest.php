@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Enums\UserType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreOrderLocationRequest extends FormRequest
@@ -11,7 +12,7 @@ class StoreOrderLocationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->role === UserType::DRIVER;
     }
 
     /**
@@ -22,7 +23,8 @@ class StoreOrderLocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ];
     }
 }
