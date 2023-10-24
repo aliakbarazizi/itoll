@@ -25,11 +25,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|OrderLocation whereLongitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderLocation whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderLocation whereUpdatedAt($value)
+ * @method static \Database\Factories\OrderLocationFactory factory($count = null, $state = [])
  * @mixin \Eloquent
  */
 class OrderLocation extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
+    ];
 
     public function order(): BelongsTo
     {

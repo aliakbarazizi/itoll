@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|Webhook whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Webhook whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Webhook whereUserId($value)
+ * @method static \Database\Factories\WebhookFactory factory($count = null, $state = [])
  * @mixin \Eloquent
  */
 class Webhook extends Model
