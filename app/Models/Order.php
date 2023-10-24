@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $user_id
  * @property int $from_customer_id
  * @property int $to_customer_id
- * @property string $status
+ * @property OrderStatus $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Customer $fromCustomer
@@ -32,13 +33,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereToCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUserId($value)
+ * @method static \Database\Factories\OrderFactory factory($count = null, $state = [])
+ * @property int|null $driver_id
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereDriverId($value)
  * @mixin \Eloquent
  */
 class Order extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'status' => OrderStatus::class,
+    ];
+
     public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function driver(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
