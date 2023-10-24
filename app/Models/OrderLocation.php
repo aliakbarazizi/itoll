@@ -37,6 +37,11 @@ class OrderLocation extends Model
         'longitude' => 'float',
     ];
 
+    protected $fillable = [
+        'latitude',
+        'longitude',
+    ];
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
