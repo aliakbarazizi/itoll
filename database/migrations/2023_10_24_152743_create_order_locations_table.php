@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('order_locations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->point('location');
+            $table->decimal('latitude', 10, 8);
+            $table->decimal('longitude', 11, 8);
             $table->foreign('order_id')->references('id')->on('orders');
             $table->timestamps();
         });
