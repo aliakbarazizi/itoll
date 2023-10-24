@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
+use App\Events\OrderStatusUpdated;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Customer;
@@ -48,6 +50,8 @@ class OrderController extends Controller
             return \Auth::user()->orders()->save($order);
         });
 
+        OrderCreated::dispatch($order);
+
         return new OrderResource($order);
     }
 
@@ -69,6 +73,9 @@ class OrderController extends Controller
 
         $order->status = OrderStatus::CANCELLED;
         $order->save();
+
+        OrderStatusUpdated::dispatch($order);
+
         return ['success' => true];
     }
 
@@ -82,6 +89,9 @@ class OrderController extends Controller
 
         $order->status = OrderStatus::IN_PROGRESS;
         $order->save();
+
+        OrderStatusUpdated::dispatch($order);
+
         return ['success' => true];
     }
 
@@ -95,6 +105,9 @@ class OrderController extends Controller
 
         $order->status = OrderStatus::COMPLETED;
         $order->save();
+
+        OrderStatusUpdated::dispatch($order);
+
         return ['success' => true];
     }
 }

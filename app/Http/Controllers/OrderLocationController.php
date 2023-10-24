@@ -2,49 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OrderLocation;
+use App\Events\OrderLocationCreated;
 use App\Http\Requests\StoreOrderLocationRequest;
-use App\Http\Requests\UpdateOrderLocationRequest;
+use App\Http\Resources\OrderLocationResource;
+use App\Models\Enums\OrderStatus;
+use App\Models\Order;
+use Illuminate\Validation\UnauthorizedException;
 
 class OrderLocationController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreOrderLocationRequest $request)
+    public function store(Order $order, StoreOrderLocationRequest $request)
     {
-        //
-    }
+        $this->authorize('view', $order);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(OrderLocation $orderLocation)
-    {
-        //
-    }
+        if ($order->status !== OrderStatus::IN_PROGRESS) {
+            throw new UnauthorizedException("Order is not active");
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateOrderLocationRequest $request, OrderLocation $orderLocation)
-    {
-        //
-    }
+        $location = $order->orderLocations()->create($request->validated());
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(OrderLocation $orderLocation)
-    {
-        //
+        OrderLocationCreated::dispatch($location);
+
+        return new OrderLocationResource($location);
     }
 }
