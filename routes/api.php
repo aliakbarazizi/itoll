@@ -12,10 +12,6 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 
         Route::put('orders/{order}/cancel', [OrderController::class, 'cancel']);
-
-        Route::resource('orders.locations', OrderLocationController::class)->only([
-            'index', 'show'
-        ]);
     });
 
     // Driver routes
@@ -23,5 +19,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('orders/{order}/accept', [OrderController::class, 'accept']);
 
         Route::put('orders/{order}/complete', [OrderController::class, 'complete']);
+
+        Route::resource('orders.locations', OrderLocationController::class)->only([
+            'store'
+        ]);
     });
 });
