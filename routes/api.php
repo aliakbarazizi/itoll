@@ -1,19 +1,27 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderLocationController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+Route::middleware('auth:sanctum')->group(function () {
+    // User routes
+    Route::middleware('role:user')->group(function () {
+        Route::resource('orders', OrderController::class)->only([
+            'index', 'show', 'store'
+        ]);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+        Route::put('orders/{order}/cancel', [OrderController::class, 'cancel']);
+
+        Route::resource('orders.locations', OrderLocationController::class)->only([
+            'index', 'show'
+        ]);
+    });
+
+    // Driver routes
+    Route::middleware('role:driver')->group(function () {
+        Route::put('orders/{order}/accept', [OrderController::class, 'accept']);
+
+        Route::put('orders/{order}/complete', [OrderController::class, 'complete']);
+    });
 });
