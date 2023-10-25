@@ -4,9 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Enums\UserType;
-use App\Models\Order;
-use App\Models\OrderLocation;
-use App\Models\Webhook;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -16,22 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\User::factory()
-            ->has(Webhook::factory())
-            ->count(10)
+        $user = User::factory()
             ->create([
                 'role' => UserType::USER,
             ]);
 
-        \App\Models\User::factory()
-            ->has(
-                Order::factory()
-                    ->has(OrderLocation::factory()->count(10))
-                    ->count(10)
-            )
-            ->
-            create([
+        $user->createToken("access_token");
+
+        $user = User::factory()
+            ->create([
                 'role' => UserType::DRIVER,
             ]);
+
+        $user->createToken("access_token");
     }
 }
