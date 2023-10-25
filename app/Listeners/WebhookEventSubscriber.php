@@ -16,36 +16,39 @@ class WebhookEventSubscriber
 {
     public function handleOrderCreated(OrderCreated $event): void
     {
-        $this->sendWebhook($event->order->user, new OrderResource(
+        $this->sendWebhook($event->order->user, 'order', new OrderResource(
             $event->order
         ));
     }
 
     public function handleOrderStatusUpdated(OrderStatusUpdated $event): void
     {
-        $this->sendWebhook($event->order->user, new OrderResource(
+        $this->sendWebhook($event->order->user, 'status', new OrderResource(
             $event->order
         ));
     }
 
     public function handleOrderLocationCreated(OrderLocationCreated $event): void
     {
-        $this->sendWebhook($event->orderLocation->order->user, new OrderLocationResource(
+        $this->sendWebhook($event->orderLocation->order->user, 'location', new OrderLocationResource(
             $event->orderLocation
         ));
     }
 
-    private function sendWebhook(User $user, JsonResource $payload): void
+    private function sendWebhook(User $user, $type, JsonResource $payload): void
     {
         if (!$user->webhook) {
             return;
         }
 
-        dispatch(function () use ($user, $payload) {
+        dispatch(function () use ($user, $type, $payload) {
             try {
                 Http::retry(3, 100)->post(
                     $user->webhook->url,
-                    json_decode($payload->toJson())
+                    [
+                        'type' => $type,
+                        'payload' => json_decode($payload->toJson())
+                    ]
                 );
             } catch (\Throwable) {
                 // maybe log the error
