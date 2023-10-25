@@ -7,6 +7,7 @@ use App\Models\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 use Auth;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
@@ -14,6 +15,8 @@ use Tests\TestCase;
 
 class OrderLocationTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_update_live_location(): void
     {
         Event::fake();

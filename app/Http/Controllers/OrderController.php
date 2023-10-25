@@ -9,7 +9,8 @@ use App\Http\Resources\OrderResource;
 use App\Models\Customer;
 use App\Models\Enums\OrderStatus;
 use App\Models\Order;
-use Illuminate\Auth\Access\AuthorizationException;
+use Auth;
+use DB;
 
 class OrderController extends Controller
 {
@@ -25,9 +26,18 @@ class OrderController extends Controller
         );
     }
 
+    public function driver()
+    {
+        $this->authorize('viewDriver', Order::class);
+
+        return OrderResource::collection(
+            Order::whereDriverId(Auth::id())->get()
+        );
+    }
+
     public function pending()
     {
-        $this->authorize('viewAny', Order::class);
+        $this->authorize('viewDriver', Order::class);
 
         return OrderResource::collection(
             Order::whereStatus(OrderStatus::REGISTERED)->get()
@@ -39,7 +49,7 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $order = \DB::transaction(function () use ($request) {
+        $order = DB::transaction(function () use ($request) {
             $from = Customer::create($request->from);
             $to = Customer::create($request->to);
 
@@ -47,7 +57,7 @@ class OrderController extends Controller
             $order->from_customer_id = $from->id;
             $order->to_customer_id = $to->id;
             $order->status = OrderStatus::REGISTERED;
-            return \Auth::user()->orders()->save($order);
+            return Auth::user()->orders()->save($order);
         });
 
         OrderCreated::dispatch($order);
@@ -63,48 +73,33 @@ class OrderController extends Controller
         return new OrderResource($order);
     }
 
-    public function cancel(Order $order)
+    public function cancel(int $order): array
     {
-        $this->authorize('update', $order);
-
-        if ($order->status !== OrderStatus::REGISTERED) {
-            throw new AuthorizationException("Can't cancel active order");
-        }
-
-        $order->status = OrderStatus::CANCELLED;
-        $order->save();
-
-        OrderStatusUpdated::dispatch($order);
-
-        return ['success' => true];
+        return $this->changeOrderStatus($order, 'cancel', OrderStatus::CANCELLED);
     }
 
-    public function accept(Order $order)
+    public function accept(int $order): array
     {
-        $this->authorize('update', $order);
-
-        if ($order->status !== OrderStatus::REGISTERED) {
-            throw new AuthorizationException("Can't accept active order");
-        }
-
-        $order->status = OrderStatus::IN_PROGRESS;
-        $order->save();
-
-        OrderStatusUpdated::dispatch($order);
-
-        return ['success' => true];
+        return $this->changeOrderStatus($order, 'accept', OrderStatus::IN_PROGRESS);
     }
 
-    public function complete(Order $order)
+    public function complete(int $order): array
     {
-        $this->authorize('update', $order);
+        return $this->changeOrderStatus($order, 'complete', OrderStatus::COMPLETED);
+    }
 
-        if ($order->status !== OrderStatus::IN_PROGRESS) {
-            throw new AuthorizationException("Can't complete active order");
-        }
+    private function changeOrderStatus(int $id, string $ability, OrderStatus $status): array
+    {
+        $order = DB::transaction(function () use ($id, $ability, $status) {
+            $order = Order::lockForUpdate()->findOrFail($id,);
 
-        $order->status = OrderStatus::COMPLETED;
-        $order->save();
+            $this->authorize($ability, $order);
+
+            $order->status = $status;
+            $order->save();
+
+            return $order;
+        });
 
         OrderStatusUpdated::dispatch($order);
 
