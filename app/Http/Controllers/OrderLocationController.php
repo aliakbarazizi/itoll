@@ -16,7 +16,7 @@ class OrderLocationController extends Controller
      */
     public function store(Order $order, StoreOrderLocationRequest $request)
     {
-        $this->authorize('view', $order);
+        $this->authorize('viewDriver', $order);
 
         if ($order->status !== OrderStatus::IN_PROGRESS) {
             throw new UnauthorizedException("Order is not active");
